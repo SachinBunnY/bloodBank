@@ -13,18 +13,6 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const getBloodRecords = async () => {
-    // let DonarList = [
-    //   {
-    //     _id: 0,
-    //     inventoryType: "in",
-    //     bloodGroup: "o+",
-    //     quantity: "250gm",
-    //     email: "sachin@gmail.com",
-    //     createdAt: "2024-05-14",
-    //   },
-    // ];
-    // setData(DonarList);
-
     try {
       const { data } = await API.get("/inventory/get-inventory");
       if (data?.success) {
@@ -38,7 +26,6 @@ const HomePage = () => {
   useEffect(() => {
     getBloodRecords();
   }, []);
-  console.log("DATA::", data);
 
   return (
     <Layout>

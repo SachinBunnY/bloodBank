@@ -47,8 +47,6 @@ namespace BloodBank.Backend.Services
         }
 
 
-        // File: Services/UserService.cs
-
         public async Task<string> Login(string email, string password)
         {
             _logger.LogInformation("Attempting login for email: {Email}", email);

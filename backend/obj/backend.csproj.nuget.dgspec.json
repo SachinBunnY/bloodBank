@@ -57,7 +57,7 @@
             },
             "Microsoft.AspNetCore.Cors": {
               "target": "Package",
-              "version": "[5.2.2, )"
+              "version": "[2.2.0, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",

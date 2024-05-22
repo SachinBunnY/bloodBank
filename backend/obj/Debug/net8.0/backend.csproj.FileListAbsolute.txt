@@ -118,3 +118,4 @@ C:\Users\ASUS-PC\Desktop\bloodBank\backend\bin\Debug\net8.0\System.Web.Http.dll
 C:\Users\ASUS-PC\Desktop\bloodBank\backend\bin\Debug\net8.0\System.Web.Http.Cors.dll
 C:\Users\ASUS-PC\Desktop\bloodBank\backend\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\ASUS-PC\Desktop\bloodBank\backend\bin\Debug\net8.0\Newtonsoft.Json.Bson.dll
+C:\Users\ASUS-PC\Desktop\bloodBank\backend\obj\Debug\net8.0\backend.sourcelink.json

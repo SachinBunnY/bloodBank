@@ -13,6 +13,8 @@ namespace BloodBank.Backend.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<InventoryRecord> InventoryRecords { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

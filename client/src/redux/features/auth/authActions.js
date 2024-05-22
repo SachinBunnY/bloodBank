@@ -40,7 +40,6 @@ export const userRegister = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log(":=>:", role, email, password);
       const { data } = await API.post("auth/register", {
         name,
         role,
@@ -52,7 +51,6 @@ export const userRegister = createAsyncThunk(
         address,
         phone,
       });
-      console.log("DATA:", data);
 
       if (data.success) {
         toast.success(data.message);

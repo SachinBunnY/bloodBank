@@ -26,67 +26,67 @@ function App() {
         <Route
           path="/"
           element={
-            // <ProtectedRoute>
-            <HomePage />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/admin"
           element={
-            // <ProtectedRoute>
-            <AdminHome />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <AdminHome />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/donar-list"
           element={
-            // <ProtectedRoute>
-            <DonarList />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <DonarList />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/hospital-list"
           element={
-            // <ProtectedRoute>
-            <HospitalList />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <HospitalList />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/org-list"
           element={
-            // <ProtectedRoute>
-            <OrgList />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <OrgList />
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/donar"
           element={
-            // <ProtectedRoute>
-            <Donar />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <Donar />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/hospital"
           element={
-            // <ProtectedRoute>
-            <Hospital />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <Hospital />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/analytics"
           element={
-            // <ProtectedRoute>
-            <Analytics />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
           }
         />
         <Route

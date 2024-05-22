@@ -5,11 +5,13 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using BloodBank.Backend.Interfaces;
 using BloodBank.Backend.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace BloodBank.Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableCors("AllowAll")]
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -23,20 +25,32 @@ namespace BloodBank.Backend.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             // Console.WriteLine("User data:", request)
-            var user = new User
+            try
             {
-                Name = request.Name,
-                Role = request.Role,
-                Email = request.Email,
-                OrganisationName = request.OrganisationName,
-                HospitalName = request.HospitalName,
-                Website = request.Website,
-                Address = request.Address,
-                Phone = request.Phone
-            };
+                var user = new User
+                {
+                    Name = request.Name,
+                    Role = request.Role,
+                    Email = request.Email,
+                    OrganisationName = request.OrganisationName,
+                    HospitalName = request.HospitalName,
+                    Website = request.Website,
+                    Address = request.Address,
+                    Phone = request.Phone
+                };
 
-            await _userService.Register(user, request.Password);
-            return Ok(new { success = true, message = "User registered successfully" });
+                await _userService.Register(user, request.Password);
+                return Ok(new { success = true, message = "User registered successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while registering the user", details = ex.Message });
+            }
+
         }
 
         [HttpPost("login")]
