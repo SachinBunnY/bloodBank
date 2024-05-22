@@ -1,28 +1,12 @@
-// File: Interfaces/IInventoryService.cs
-
-
 using BloodBank.Backend.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-public interface IInventoryService
+namespace BloodBank.Backend.Interfaces
 {
-    // Define your methods here
-    Task<User> Inventory(string email, string BloodGroup);
-}
-
-// File: Services/InventoryService.cs
-
-
-
-public class InventoryService : IInventoryService
-{
-    private readonly ApplicationDbContext _context;
-    private readonly ILogger<InventoryService> _logger;
-
-    public InventoryService(ApplicationDbContext context, ILogger<InventoryService> logger)
+    public interface IInventoryService
     {
-        _context = context;
-        _logger = logger;
+        Task<List<InventoryRecord>> GetInventoryRecordsAsync();
+        Task<InventoryRecord> CreateInventoryRecordAsync(InventoryRecord record);
     }
-
-    // Implement your methods here
 }

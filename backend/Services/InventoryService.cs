@@ -1,26 +1,38 @@
-// Services/InventoryService.cs
+// File: Services/InventoryService.cs
+
 using BloodBank.Backend.Data;
 using BloodBank.Backend.Models;
+using BloodBank.Backend.Interfaces;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace BloodBank.Backend.Services
 {
-    public class InventoryService
+    public class InventoryService : IInventoryService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<InventoryService> _logger;
 
-        public InventoryService(ApplicationDbContext context)
+        public InventoryService(ApplicationDbContext context, ILogger<InventoryService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        public async Task<IEnumerable<InventoryRecord>> GetInventoryAsync()
+        public async Task<List<InventoryRecord>> GetInventoryRecordsAsync()
         {
+            _logger.LogInformation("Fetching inventory records from the database.");
             return await _context.InventoryRecords.ToListAsync();
         }
 
-        // Additional methods for handling inventory can be added here
+        public async Task<InventoryRecord> CreateInventoryRecordAsync(InventoryRecord record)
+        {
+            _context.InventoryRecords.Add(record);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Created a new inventory record.");
+            return record;
+        }
     }
 }

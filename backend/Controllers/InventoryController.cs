@@ -1,17 +1,17 @@
-// Controllers/InventoryController.cs
-using BloodBank.Backend.Services;
+using BloodBank.Backend.Interfaces;
+using BloodBank.Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace BloodBank.Backend.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class InventoryController : ControllerBase
     {
-        private readonly InventoryService _inventoryService;
+        private readonly IInventoryService _inventoryService;
 
-        public InventoryController(InventoryService inventoryService)
+        public InventoryController(IInventoryService inventoryService)
         {
             _inventoryService = inventoryService;
         }
@@ -19,8 +19,21 @@ namespace BloodBank.Backend.Controllers
         [HttpGet("get-inventory")]
         public async Task<IActionResult> GetInventory()
         {
-            var inventory = await _inventoryService.GetInventoryAsync();
-            return Ok(new { success = true, inventory });
+            var inventoryRecords = await _inventoryService.GetInventoryRecordsAsync();
+            return Ok(new { success = true, inventory = inventoryRecords });
         }
+
+        [HttpPost("create-inventory")]
+        public async Task<IActionResult> CreateInventory([FromBody] InventoryRecord record)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var newRecord = await _inventoryService.CreateInventoryRecordAsync(record);
+            return Ok(new { success = true, inventory = newRecord });
+        }
+
     }
 }

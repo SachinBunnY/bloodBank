@@ -56,7 +56,7 @@ const HomePage = () => {
           </h4>
 
           <div className="container m-3">
-            <table className="table">
+            <table className="table" style={{ width: "100%" }}>
               <thead>
                 <tr>
                   <th scope="col">Blood Groud</th>

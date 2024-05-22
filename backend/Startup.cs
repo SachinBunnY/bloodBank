@@ -57,8 +57,10 @@ namespace BloodBank.Backend
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IInventoryService, InventoryService>();
+            services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+
 
         }
 

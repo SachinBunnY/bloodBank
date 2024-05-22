@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -56,27 +57,32 @@ namespace BloodBank.Backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = await _userService.Login(request.Email, request.Password);
-            if (token == null)
+            var tokens = await _userService.Login(request.Email, request.Password);
+            if (tokens == null)
             {
                 return Unauthorized(new { success = false, message = "Invalid credentials" });
             }
 
-            return Ok(new { success = true, token, message = "Login successful" });
+            return Ok(new { success = true, token = tokens, message = "Login successful" });
         }
 
-        [Authorize]
         [HttpGet("current-user")]
+        [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
-            var userId = int.Parse(User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var user = await _userService.GetCurrentUser(userId);
-            if (user == null)
+            if (User.Identity is ClaimsIdentity identity)
             {
-                return NotFound(new { success = false, message = "User not found" });
+                var userIdClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    var user = await _userService.GetCurrentUserAsync(userId);
+                    if (user != null)
+                    {
+                        return Ok(new { success = true, user });
+                    }
+                }
             }
-
-            return Ok(new { success = true, data = user });
+            return Unauthorized(new { success = false, message = "User not found" });
         }
     }
 

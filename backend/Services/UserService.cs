@@ -1,4 +1,3 @@
-// File: Services/UserService.cs
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -85,12 +84,24 @@ namespace BloodBank.Backend.Services
             return tokenHandler.WriteToken(token);
         }
 
-
-
         public async Task<User> GetCurrentUser(int userId)
         {
             _logger.LogInformation("Fetching current user with ID: {UserId}", userId);
             return await _context.Users.FindAsync(userId);
         }
+
+        public async Task<UserDTO> GetCurrentUserAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return null;
+
+            return new UserDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = user.Role
+            };
+        }
+
     }
 }
