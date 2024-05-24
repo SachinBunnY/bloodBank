@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using BloodBank.Backend.Interfaces;
 using BloodBank.Backend.Models;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.Extensions.Logging;
 
 namespace BloodBank.Backend.Controllers
 {
@@ -16,16 +16,18 @@ namespace BloodBank.Backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, ILogger<AuthController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // Console.WriteLine("User data:", request)
+            _logger.LogInformation("User data: {Request}", request);
             try
             {
                 var user = new User
@@ -51,7 +53,6 @@ namespace BloodBank.Backend.Controllers
             {
                 return StatusCode(500, new { message = "An error occurred while registering the user", details = ex.Message });
             }
-
         }
 
         [HttpPost("login")]
@@ -62,7 +63,7 @@ namespace BloodBank.Backend.Controllers
             {
                 return Unauthorized(new { success = false, message = "Invalid credentials" });
             }
-
+            _logger.LogInformation("TOKEN: {Tokens}", tokens);
             return Ok(new { success = true, token = tokens, message = "Login successful" });
         }
 
@@ -70,19 +71,28 @@ namespace BloodBank.Backend.Controllers
         [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
-            if (User.Identity is ClaimsIdentity identity)
+            _logger.LogInformation("Attempting to get current user.");
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _logger.LogInformation("USER ID: {userId}", userIdClaim);
+
+            if (userIdClaim == null)
             {
-                var userIdClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-                {
-                    var user = await _userService.GetCurrentUserAsync(userId);
-                    if (user != null)
-                    {
-                        return Ok(new { success = true, user });
-                    }
-                }
+                return Unauthorized(new { message = "User not found" });
             }
-            return Unauthorized(new { success = false, message = "User not found" });
+
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return BadRequest(new { message = "Invalid user ID" });
+            }
+
+            var user = await _userService.GetCurrentUserAsync(userId);
+            _logger.LogInformation("USER DATA: {user}", user);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User not found" });
+            }
+
+            return Ok(new { success = true, user });
         }
     }
 

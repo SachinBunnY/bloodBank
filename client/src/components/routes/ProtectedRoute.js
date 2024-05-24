@@ -10,6 +10,7 @@ const ProtectedRoute = ({ children }) => {
   //get current user
   const getUser = async () => {
     try {
+      console.log("FIRST CALL");
       const { data } = await API.get("auth/current-user");
       console.log("CURRNET USER:", data);
       if (data?.success) {

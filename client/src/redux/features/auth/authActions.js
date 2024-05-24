@@ -8,6 +8,9 @@ export const userLogin = createAsyncThunk(
     try {
       const { data } = await API.post("/auth/login", { role, email, password });
       console.log("AFTER LOGIN DATA:", data);
+      //       AFTER LOGIN DATA:
+      // Object { success: true, token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3IiwiZW1haWwiOiJzYWNoaW5AZ21haWwuY29tIiwicm9sZSI6IkFkbWluIiwibmJmIjoxNzE2NDgyMzMyLCJleHAiOjE3MTcwODcxMzIsImlhdCI6MTcxNjQ4MjMzMn0.VnuNfWPRiouxGj-a56YVBBOuCqdYpJQrpZpBNwskeFQ", message: "Login successful" }
+
       if (data.success) {
         localStorage.setItem("token", data.token);
         toast.success(data.message);
@@ -75,7 +78,9 @@ export const getCurrentUser = createAsyncThunk(
   "auth/getCurrentUser",
   async ({ rejectWithValue }) => {
     try {
+      console.log("SECOND CALL");
       const res = await API.get("/auth/current-user");
+      console.log("SECOND DATA::", res);
       if (res?.data) {
         return res?.data;
       }

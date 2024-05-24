@@ -9,28 +9,28 @@ const DonarList = () => {
   const [temp, setTemp] = useState(false);
   //find donar records
   const getDonars = async () => {
-    let DonarList = [
-      {
-        _id: 0,
-        name: "SACHIN",
-        organisationName: "Feedsense",
-        email: "sachin@gmail.com",
-        phone: 7003885384,
-        createdAt: "2024-05-14",
-      },
-    ];
-    setData(DonarList);
-    // try {
-    //   const { data } = await API.get("/admin/donar-list");
-    //   //   console.log(data);
-    //   if (data?.success) {
-    //     setData(data?.donarData);
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // }finally{
-    //   setTemp(false);
-    // }
+    // let DonarList = [
+    //   {
+    //     _id: 0,
+    //     name: "SACHIN",
+    //     organisationName: "Feedsense",
+    //     email: "sachin@gmail.com",
+    //     phone: 7003885384,
+    //     createdAt: "2024-05-14",
+    //   },
+    // ];
+    // setData(DonarList);
+    try {
+      const { data } = await API.get("/admin/donar-list");
+      //   console.log(data);
+      if (data?.success) {
+        setData(data?.donarData);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setTemp(false);
+    }
   };
 
   useEffect(() => {
