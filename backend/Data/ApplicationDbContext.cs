@@ -15,6 +15,8 @@ namespace BloodBank.Backend.Data
         public DbSet<User> Users { get; set; }
         public DbSet<InventoryRecord> InventoryRecords { get; set; }
 
+        // DbSet for Payment entity  RAZOR PAYMENT INTEGRATION
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,5 +26,7 @@ namespace BloodBank.Backend.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
         }
+
+
     }
 }

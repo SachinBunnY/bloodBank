@@ -6,11 +6,13 @@ import Layout from "../components/shared/Layout/Layout";
 import Modal from "../components/shared/modal/Modal";
 import API from "../services/API";
 import moment from "moment";
+import PaymentModal from "../pages/RazorpayModal";
 
 const HomePage = () => {
   const [data, setData] = useState([]);
   const { loading, error, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getBloodRecords = async () => {
     try {
@@ -85,8 +87,12 @@ const HomePage = () => {
                       {moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}
                     </td>
                     <td>
-                      <button type="button" class="btn btn-secondary">
-                        Buy
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onClick={() => setIsModalOpen(true)}
+                      >
+                        Buy Blood
                       </button>
                     </td>
                   </tr>
@@ -94,7 +100,11 @@ const HomePage = () => {
               </tbody>
             </table>
           </div>
-
+          <PaymentModal
+            isOpen={isModalOpen}
+            onRequestClose={() => setIsModalOpen(false)}
+            setIsModalOpen={setIsModalOpen}
+          />
           <Modal />
         </>
       )}
