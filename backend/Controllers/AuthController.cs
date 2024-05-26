@@ -18,6 +18,8 @@ namespace BloodBank.Backend.Controllers
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
 
+        private IConfiguration _config;
+
         public AuthController(IUserService userService, ILogger<AuthController> logger)
         {
             _userService = userService;
@@ -42,8 +44,8 @@ namespace BloodBank.Backend.Controllers
                     Phone = request.Phone
                 };
 
-                await _userService.Register(user, request.Password);
-                return Ok(new { success = true, message = "User registered successfully" });
+                var registeredUser = await _userService.Register(user, request.Password);
+                return Ok(new { success = true, message = "User registered successfully", user = registeredUser });
             }
             catch (InvalidOperationException ex)
             {
@@ -68,10 +70,17 @@ namespace BloodBank.Backend.Controllers
         }
 
         [HttpGet("current-user")]
-        [Authorize]
+        // [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
             _logger.LogInformation("Attempting to get current user.");
+            var claims = User.Claims;
+            _logger.LogInformation("Attempting to get current user:{User}", User);
+            foreach (var claim in claims)
+            {
+                _logger.LogInformation("Claim Type: {type}, Claim Value: {value}", claim.Type, claim.Value);
+            }
+
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             _logger.LogInformation("USER ID: {userId}", userIdClaim);
 
@@ -94,6 +103,7 @@ namespace BloodBank.Backend.Controllers
 
             return Ok(new { success = true, user });
         }
+
     }
 
     public class RegisterRequest

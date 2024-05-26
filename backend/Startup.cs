@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using BloodBank.Backend.Data;
 using BloodBank.Backend.Interfaces;
 using BloodBank.Backend.Services;
@@ -8,18 +9,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace BloodBank.Backend
 {
     public class Startup
     {
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
         public IConfiguration Configuration { get; }
-
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -35,24 +38,54 @@ namespace BloodBank.Backend
                     });
             });
 
-
-            // services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            var key = Encoding.ASCII.GetBytes(Configuration["Jwt:Key"]);
-            services.AddAuthentication(x =>
+            services.AddAuthentication(options =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(x =>
+            .AddJwtBearer(options =>
             {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
+                options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                        var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", string.Empty);
+                        logger.LogInformation("Token received: {token}", token);
+                        context.Token = token;
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        var token = context.SecurityToken as JsonWebToken;
+                        if (token != null)
+                        {
+                            var claims = token.Claims;
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                            foreach (var claim in claims)
+                            {
+                                logger.LogInformation("Claim Type: {type}, Claim Value: {value}", claim.Type, claim.Value);
+                            }
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                        logger.LogWarning("Authentication failed: {exception}", context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
+                };
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
                 };
             });
 
@@ -61,13 +94,11 @@ namespace BloodBank.Backend
                 options.UseMySql(Configuration.GetConnectionString("DefaultConnection"),
                     new MySqlServerVersion(new Version(8, 0, 21))));
 
-
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
-
 
         }
 
@@ -78,14 +109,12 @@ namespace BloodBank.Backend
                 app.UseDeveloperExceptionPage();
             }
 
-            // Use custom exception handling middleware
             app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            // app.UseCors("AllowAll");
             app.UseCors(options => options
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
@@ -99,13 +128,11 @@ namespace BloodBank.Backend
             {
                 endpoints.MapControllers();
             });
-
             app.UseStaticFiles();
 
             // Swagger configuration
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BloodBank API v1"));
-
 
             app.Use(async (context, next) =>
             {

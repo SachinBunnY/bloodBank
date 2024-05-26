@@ -6,6 +6,7 @@ namespace BloodBank.Backend.Models
 {
     public class User
     {
+        public static IEnumerable<object> Claims { get; internal set; }
         public int Id { get; set; }
 
         [Required]

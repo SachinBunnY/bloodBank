@@ -10,21 +10,26 @@ const ProtectedRoute = ({ children }) => {
   //get current user
   const getUser = async () => {
     try {
-      console.log("FIRST CALL");
-      const { data } = await API.get("auth/current-user");
+      const token = localStorage.getItem("token");
+      console.log("FIRST CALL", token);
+      let { data } = await API.get("/auth/current-user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("CURRNET USER:", data);
       if (data?.success) {
-        dispatch(getCurrentUser(data));
+        dispatch(getCurrentUser(data.user));
       }
     } catch (error) {
       localStorage.clear();
-      console.log(error);
+      console.log("ERROR", error);
     }
   };
 
   useEffect(() => {
     getUser();
-  });
+  }, []);
 
   if (localStorage.getItem("token")) {
     return children;

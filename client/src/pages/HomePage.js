@@ -64,6 +64,7 @@ const HomePage = () => {
                   <th scope="col">Quantity</th>
                   <th scope="col">Donar Email</th>
                   <th scope="col">Time Date</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,6 +83,11 @@ const HomePage = () => {
                     <td>{record.email}</td>
                     <td>
                       {moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-secondary">
+                        Buy
+                      </button>
                     </td>
                   </tr>
                 ))}
