@@ -9,22 +9,11 @@ const DonarList = () => {
   const [temp, setTemp] = useState(false);
   //find donar records
   const getDonars = async () => {
-    // let DonarList = [
-    //   {
-    //     _id: 0,
-    //     name: "SACHIN",
-    //     organisationName: "Feedsense",
-    //     email: "sachin@gmail.com",
-    //     phone: 7003885384,
-    //     createdAt: "2024-05-14",
-    //   },
-    // ];
-    // setData(DonarList);
     try {
-      const { data } = await API.get("/admin/donar-list");
-      //   console.log(data);
+      const { data } = await API.get("/inventory/get-inventory");
+      console.log("DATA:", data?.inventory);
       if (data?.success) {
-        setData(data?.donarData);
+        setData(data?.inventory);
       }
     } catch (error) {
       console.log(error);
@@ -39,14 +28,15 @@ const DonarList = () => {
   }, []);
 
   //DELETE FUNCTION
-  const handelDelete = async (id) => {
+  const handelDelete = async (email) => {
+    console.log("EMAIL FOR DELETE::", email);
     try {
       let answer = window.prompt(
         "Are You Sure Want To Delete This Donor",
         "Sure"
       );
       if (!answer) return;
-      const { data } = await API.delete(`/admin/delete-donar/${id}`);
+      const { data } = await API.delete(`/auth/delete-donor/${email}`);
       alert(data?.message);
       window.location.reload();
     } catch (error) {
@@ -75,24 +65,26 @@ const DonarList = () => {
               <tr className="table-active">
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
-                <th scope="col">Phone</th>
+                <th scope="col">Group</th>
+                <th scope="col">Quantity</th>
                 <th scope="col">Date</th>
                 <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
               {data?.map((record) => (
-                <tr key={record._id}>
-                  <td>{record.name || record.organisationName + " (ORG)"}</td>
+                <tr key={record.id}>
+                  <td>{String(record?.email?.split("@")[0]).toUpperCase()}</td>
                   <td>{record.email}</td>
-                  <td>{record.phone}</td>
+                  <td>{record.bloodGroup}</td>
+                  <td>{record.quantity}</td>
                   <td>
                     {moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}
                   </td>
                   <td>
                     <button
                       className="btn btn-danger"
-                      onClick={() => handelDelete(record._id)}
+                      onClick={() => handelDelete(record?.email)}
                     >
                       Delete
                     </button>

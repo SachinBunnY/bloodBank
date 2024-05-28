@@ -64,8 +64,30 @@ namespace backend.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(65,30)");
 
-                    b.Property<string>("OrderId")
+                    b.Property<string>("BankRRN")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BloodGroup")
                         .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BloodOwner")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BloodQuantity")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Contact")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OrderId")
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("PaymentDate")
@@ -83,7 +105,7 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("BloodBank.Backend.Models.User", b =>

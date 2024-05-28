@@ -13,6 +13,7 @@ const HomePage = () => {
   const { loading, error, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [orderData, setOrderData] = useState({});
 
   const getBloodRecords = async () => {
     try {
@@ -24,14 +25,19 @@ const HomePage = () => {
       console.log(error);
     }
   };
+  function handlePayBtn(index) {
+    setOrderData(data[index]);
+    setIsModalOpen(true);
+  }
 
   useEffect(() => {
     getBloodRecords();
   }, []);
+  console.log("USER:::", user);
 
   return (
     <Layout>
-      {user?.role === "admin" && navigate("/admin")}
+      {user?.role === "Admin" && navigate("/admin")}
       {error && <span>{alert(error)}</span>}
       {loading ? (
         <div className="d-flex justify-content-center align-items-center">
@@ -70,7 +76,7 @@ const HomePage = () => {
                 </tr>
               </thead>
               <tbody>
-                {data?.map((record) => (
+                {data?.map((record, index) => (
                   <tr
                     className={
                       record.inventoryType.toLowerCase() === "in"
@@ -90,7 +96,7 @@ const HomePage = () => {
                       <button
                         type="button"
                         class="btn btn-secondary"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={(e) => handlePayBtn(index)}
                       >
                         Buy Blood
                       </button>
@@ -104,6 +110,7 @@ const HomePage = () => {
             isOpen={isModalOpen}
             onRequestClose={() => setIsModalOpen(false)}
             setIsModalOpen={setIsModalOpen}
+            orderData={orderData}
           />
           <Modal />
         </>

@@ -3,7 +3,12 @@ import Modal from "react-modal";
 import API from "../services/API";
 import "./RazorpayModal.css";
 
-const PaymentModal = ({ isOpen, onRequestClose, setIsModalOpen }) => {
+const PaymentModal = ({
+  isOpen,
+  onRequestClose,
+  setIsModalOpen,
+  orderData,
+}) => {
   const [paymentDetails, setPaymentDetails] = useState({
     name: "",
     email: "",
@@ -18,18 +23,19 @@ const PaymentModal = ({ isOpen, onRequestClose, setIsModalOpen }) => {
     });
   };
 
-  console.log("paymentDetails::", paymentDetails);
-
   const handlePaymentSubmit = async () => {
     try {
       // Create order on the server
-      console.log("CALLED::", paymentDetails);
-      const orderResponse = await API.post("/auth/create-order", {
-        amount: paymentDetails?.amount,
+      const orderResponse = await API.post("/payment/create-order", {
+        amount: Number(paymentDetails?.amount),
+        email: paymentDetails?.email,
+        phone: paymentDetails?.phone,
+        bloodGroup: orderData?.bloodGroup,
+        author: orderData?.email,
+        quantity: String(orderData?.quantity),
       });
 
       const order = orderResponse.data;
-      console.log("ORDER DATA::", order);
       // Configure Razorpay options
       const options = {
         key: "rzp_test_XucVmb1X3bzatG",
@@ -40,13 +46,14 @@ const PaymentModal = ({ isOpen, onRequestClose, setIsModalOpen }) => {
         order_id: order.id,
         handler: async (response) => {
           console.log("RESPONSE::", response);
-          const verificationResponse = await API.post("/auth/verify-payment", {
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-          });
-
-          console.log(":verificationResponse:::", verificationResponse);
+          const verificationResponse = await API.post(
+            "/payment/verify-payment",
+            {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            }
+          );
 
           if (verificationResponse.data.success) {
             // Payment was successful

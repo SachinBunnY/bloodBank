@@ -1,7 +1,6 @@
 import React from "react";
 import Layout from "../../components/shared/Layout/Layout";
 import { useSelector } from "react-redux";
-import PaymentHistory from "../admin/PaymentHistory";
 
 const AdminHome = () => {
   const { user } = useSelector((state) => state.auth);
@@ -14,7 +13,6 @@ const AdminHome = () => {
           </h1>
           <h3 className="mt-4">Manage Blood Bank App </h3>
           <hr />
-          <PaymentHistory />
         </div>
       </div>
     </Layout>

@@ -93,7 +93,6 @@ namespace BloodBank.Backend.Services
                 _logger.LogWarning("Invalid password for email: {Email}", email);
                 return null;
             }
-
             var token = GenerateJwtToken(userId, email, role);
             return token;
         }
@@ -132,7 +131,7 @@ namespace BloodBank.Backend.Services
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            var query = "SELECT Id, Name, Email, Role, OrganisationName, HospitalName, Website, Address, Phone FROM Users WHERE Id = @Id";
+            var query = "SELECT Id, Name, Email, Role, OrganisationName, HospitalName, Website, Address, Phone,PasswordHash FROM Users WHERE Id = @Id";
             using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@Id", userId);
 
@@ -153,7 +152,8 @@ namespace BloodBank.Backend.Services
                 HospitalName = reader.GetString("HospitalName"),
                 Website = reader.GetString("Website"),
                 Address = reader.GetString("Address"),
-                Phone = reader.GetString("Phone")
+                Phone = reader.GetString("Phone"),
+                PasswordHash = reader.GetString("PasswordHash")
             };
         }
 
@@ -165,9 +165,83 @@ namespace BloodBank.Backend.Services
             return new UserDTO
             {
                 Id = user.Id,
+                Name = user.Name,
                 Email = user.Email,
-                Role = user.Role
+                Role = user.Role,
+                OrganisationName = user.OrganisationName,
+                HospitalName = user.HospitalName,
+                Address = user.Address,
+                Phone = user.Phone,
+                Password = user.PasswordHash
             };
+        }
+
+        // New method to update user profile
+        public async Task<User> UpdateUserProfile(User updatedUser, string newPassword = null)
+        {
+            _logger.LogInformation("Updating user profile for user with ID: {UserId}", updatedUser.Id);
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var query = @"
+                UPDATE Users
+                SET Name = @Name, Email = @Email, Address = @Address, Phone = @Phone
+                WHERE Id = @Id";
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Id", updatedUser.Id);
+            command.Parameters.AddWithValue("@Name", updatedUser.Name);
+            command.Parameters.AddWithValue("@Email", updatedUser.Email);
+            command.Parameters.AddWithValue("@Address", updatedUser.Address);
+            command.Parameters.AddWithValue("@Phone", updatedUser.Phone);
+
+            await command.ExecuteNonQueryAsync();
+
+            if (!string.IsNullOrEmpty(newPassword))
+            {
+                var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                query = "UPDATE Users SET PasswordHash = @PasswordHash WHERE Id = @Id";
+                using var passwordCommand = new MySqlCommand(query, connection);
+                passwordCommand.Parameters.AddWithValue("@PasswordHash", passwordHash);
+                passwordCommand.Parameters.AddWithValue("@Id", updatedUser.Id);
+                await passwordCommand.ExecuteNonQueryAsync();
+            }
+
+            _logger.LogInformation("User profile updated successfully for user with ID: {UserId}", updatedUser.Id);
+            return updatedUser;
+        }
+
+        // New method to delete user
+        public async Task<bool> DeleteUser(string email)
+        {
+            _logger.LogInformation("Deleting user with EMAIL: {email}", email);
+
+
+            //DELETING DONOR DATA FROM INVENTRY
+            using var connectionInve = new MySqlConnection(_connectionString);
+            await connectionInve.OpenAsync();
+            var queryInve = "DELETE FROM InventoryRecords WHERE Email = @Email";
+            using var commandInve = new MySqlCommand(queryInve, connectionInve);
+            commandInve.Parameters.AddWithValue("@Email", email);
+
+            var resultInve = await commandInve.ExecuteNonQueryAsync();
+
+            //DELETING THE DONOR
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            var query = "DELETE FROM Users WHERE Email = @Email";
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Email", email);
+
+            var result = await command.ExecuteNonQueryAsync();
+            if (result > 0)
+            {
+                _logger.LogInformation("User deleted successfully with Email: {email}", email);
+                return true;
+            }
+
+            _logger.LogWarning("Failed to delete user with Email: {email}", email);
+            return false;
         }
     }
 }

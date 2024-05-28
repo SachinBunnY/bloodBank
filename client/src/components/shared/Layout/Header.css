@@ -1,0 +1,18 @@
+.textStyle{
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.spanStyle{
+    font-size: 18px;
+    font-weight: lighter;
+}
+
+.btnDivProfile{
+    margin-top: 0.5rem;
+    float: right;
+    width: 10rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}

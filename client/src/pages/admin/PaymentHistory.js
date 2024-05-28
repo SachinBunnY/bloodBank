@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
+import API from "../../services/API";
 
 const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
 
   useEffect(() => {
     const fetchPayments = async () => {
-      const response = await fetch("/api/payment/payment-history");
-      const data = await response.json();
-      setPayments(data);
+      try {
+        const response = await API.get("/payment/payment-history");
+        console.log("Payment Data::", response?.data);
+        setPayments(response?.data);
+      } catch (e) {
+        console.log("Error when call try to get payment history:", e);
+      }
     };
     fetchPayments();
   }, []);

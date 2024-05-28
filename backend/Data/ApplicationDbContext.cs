@@ -25,6 +25,9 @@ namespace BloodBank.Backend.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            modelBuilder.Entity<Payment>().ToTable("Payments");
+
         }
 
 

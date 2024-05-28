@@ -7,9 +7,6 @@ using BloodBank.Backend.Interfaces;
 using BloodBank.Backend.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.Extensions.Logging;
-using Razorpay.Api;
-using Payment = BloodBank.Backend.Models.Payment; // Alias for BloodBank Payment class
-// using RazorpayPayment = Razorpay.Api.Payment;
 
 namespace BloodBank.Backend.Controllers
 {
@@ -21,15 +18,10 @@ namespace BloodBank.Backend.Controllers
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
 
-        private readonly Data.ApplicationDbContext _context;
-        private IConfiguration _config;
-
-        public AuthController(IUserService userService, ILogger<AuthController> logger, Data.ApplicationDbContext context, IConfiguration config)
+        public AuthController(IUserService userService, ILogger<AuthController> logger)
         {
             _userService = userService;
             _logger = logger;
-            _context = context;
-            _config = config;
         }
 
         [HttpPost("register")]
@@ -76,7 +68,6 @@ namespace BloodBank.Backend.Controllers
         }
 
         [HttpGet("current-user")]
-        // [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
             _logger.LogInformation("Attempting to get current user.");
@@ -110,92 +101,46 @@ namespace BloodBank.Backend.Controllers
             return Ok(new { success = true, user });
         }
 
-
-        // RAZOR PAYMENT INTEGRATION START FROM HERE
-        [HttpPost("create-order")]
-        public IActionResult CreateOrder([FromBody] PaymentRequest request)
+        // New endpoint to update user profile
+        [HttpPut("update-profile")]
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileRequest request)
         {
-            try
+            _logger.LogInformation("Inside update-profile: {request}", request);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            _logger.LogInformation("UserID: {userId}", userId);
+            var user = await _userService.GetCurrentUser(userId);
+            if (user == null)
             {
-                var client = new RazorpayClient(_config["Razorpay:KeyId"], _config["Razorpay:KeySecret"]);
-                var options = new Dictionary<string, object>
-        {
-            { "amount", request.Amount * 100 },
-            { "currency", "INR" },
-            { "receipt", "receipt#1" },
-            { "payment_capture", 1 }
-        };
-                var order = client.Order.Create(options);
+                return NotFound(new { message = "User not found" });
+            }
 
-                var payment = new Payment
-                {
-                    OrderId = order["id"].ToString(),
-                    Amount = request.Amount,
-                    PaymentDate = DateTime.UtcNow,
-                    Status = "Created"
-                };
-                _context.Payments.Add(payment);
-                _context.SaveChanges();
-                _logger.LogError("Successfully created order");
-                return Ok(new { id = order["id"].ToString(), amount = request.Amount * 100 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating order");
-                return BadRequest(new { message = "Error creating order" });
-            }
+            user.Name = request.Name ?? user.Name;
+            user.Email = request.Email ?? user.Email;
+            user.Address = request.Address ?? user.Address;
+            user.Phone = request.Phone ?? user.Phone;
+
+            var updatedUser = await _userService.UpdateUserProfile(user, request.Password);
+
+            return Ok(Ok(new { success = true, updatedUser }));
         }
 
-        [HttpPost("verify-payment")]
-        public IActionResult VerifyPayment([FromBody] PaymentVerificationRequest request)
+        // New endpoint to delete a user (only for admin)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete-donor/{email}")]
+        public async Task<IActionResult> DeleteUser(string email)
         {
-            _logger.LogError("Verify-payment: {request}", request);
-            var payment = _context.Payments.FirstOrDefault(p => p.OrderId == request.RazorpayOrderId);
-            if (payment == null)
+            _logger.LogInformation("Inside delete user: {email}", email);
+            var result = await _userService.DeleteUser(email);
+            if (!result)
             {
-                return NotFound(new { message = "Payment not found" });
+                return NotFound(new { message = "User not found" });
             }
-            _logger.LogError("Verify-payment payment: {payment}", payment);
 
-            var isSignatureValid = VerifySignature(request.RazorpayOrderId, request.RazorpayPaymentId, request.RazorpaySignature);
-            _logger.LogError("Verify-payment isSignatureValid: {isSignatureValid}", isSignatureValid);
-            if (isSignatureValid)
-            {
-                payment.PaymentId = request.RazorpayPaymentId;
-                payment.Signature = request.RazorpaySignature;
-                payment.Status = "Success";
-                _context.SaveChanges();
-                return Ok(new { success = true, message = "Payment verified successfully" });
-            }
-            else
-            {
-                payment.Status = "Failed";
-                _context.SaveChanges();
-                return BadRequest(new { message = "Invalid signature" });
-            }
-        }
-
-        private bool VerifySignature(string orderId, string paymentId, string signature)
-        {
-            var keySecret = _config["Razorpay:KeySecret"];
-            var generatedSignature = $"{orderId}|{paymentId}";
-            var generatedSignatureBytes = new System.Text.UTF8Encoding().GetBytes(generatedSignature);
-            using (var hmac = new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(keySecret)))
-            {
-                var hash = hmac.ComputeHash(generatedSignatureBytes);
-                var generatedSignatureString = BitConverter.ToString(hash).Replace("-", "").ToLower();
-                return generatedSignatureString == signature;
-            }
-        }
-
-        [HttpGet("payment-history")]
-        public IActionResult GetPaymentHistory()
-        {
-            var payments = _context.Payments.ToList();
-            return Ok(payments);
+            return Ok(new { message = "User deleted successfully" });
         }
 
     }
+
 
     public class RegisterRequest
     {
@@ -208,6 +153,7 @@ namespace BloodBank.Backend.Controllers
         public string Website { get; set; }
         public string Address { get; set; }
         public string Phone { get; set; }
+
     }
 
     public class LoginRequest
@@ -216,16 +162,13 @@ namespace BloodBank.Backend.Controllers
         public string Password { get; set; }
     }
 
-    public class PaymentRequest
+    public class UpdateUserProfileRequest
     {
-        public int Amount { get; set; }
-    }
-
-    public class PaymentVerificationRequest
-    {
-        public string RazorpayOrderId { get; set; }
-        public string RazorpayPaymentId { get; set; }
-        public string RazorpaySignature { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
     }
 
 

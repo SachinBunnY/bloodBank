@@ -11,13 +11,11 @@ const ProtectedRoute = ({ children }) => {
   const getUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("FIRST CALL", token);
       let { data } = await API.get("/auth/current-user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("CURRNET USER:", data);
       if (data?.success) {
         dispatch(getCurrentUser(data.user));
       }

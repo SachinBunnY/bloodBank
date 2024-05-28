@@ -13,7 +13,7 @@ import Consumer from "./pages/Dashboard/Consumer";
 import Donation from "./pages/Donation";
 import Analytics from "./pages/Dashboard/Analytics";
 import DonarList from "./pages/admin/DonarList";
-import HospitalList from "./pages/admin/HospitalList";
+import Report from "./pages/admin/Report";
 import OrgList from "./pages/admin/OrgList";
 import AdminHome from "./pages/admin/AdminHome";
 
@@ -50,10 +50,10 @@ function App() {
           }
         />
         <Route
-          path="/hospital-list"
+          path="/reports"
           element={
             <ProtectedRoute>
-              <HospitalList />
+              <Report />
             </ProtectedRoute>
           }
         />

@@ -37,8 +37,8 @@ const Sidebar = () => {
               </div>
             </>
           )}
-          
-          {user?.role === "admin" && (
+
+          {user?.role === "Admin" && (
             <>
               <div
                 className={`menu-item ${
@@ -50,20 +50,20 @@ const Sidebar = () => {
               </div>
               <div
                 className={`menu-item ${
-                  location.pathname === "/hospital-list" && "active"
+                  location.pathname === "/reports" && "active"
                 }`}
               >
                 <i className="fa-solid fa-truck-medical"></i>
-                <Link to="/hospital-list">Hospital List</Link>
+                <Link to="/reports">Reports</Link>
               </div>
-              <div
+              {/* <div
                 className={`menu-item ${
                   location.pathname === "/org-list" && "active"
                 }`}
               >
                 <i className="fa-solid fa-hospital"></i>
                 <Link to="/org-list">Organisation List</Link>
-              </div>
+              </div> */}
             </>
           )}
 
@@ -90,7 +90,7 @@ const Sidebar = () => {
               <Link to="/consumer">Consumer</Link>
             </div>
           )}
-          {user?.role === "donar" && (
+          {/* {user?.role === "donar" && (
             <div
               className={`menu-item ${
                 location.pathname === "/donation" && "active"
@@ -99,7 +99,7 @@ const Sidebar = () => {
               <i className="fa-solid fa-book-medical"></i>
               <Link to="/donation">Donations Log</Link>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

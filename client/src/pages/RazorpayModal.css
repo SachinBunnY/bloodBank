@@ -1,8 +1,8 @@
 .ReactModal__Content{
-    max-height: 20rem !important;
-    max-width: 40rem !important;
-    top:8rem !important;
-    left:20rem !important;
+    max-height: 40rem !important;
+    max-width: 50rem !important;
+    top:5rem !important;
+    left:15rem !important;
     right:10rem !important;
     bottom: 7rem !important;
 }
